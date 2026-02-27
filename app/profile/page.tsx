@@ -8,7 +8,7 @@ import { ENTITLEMENTS } from '@/lib/types';
 import { FamilyFeatures } from '@/components/FamilyFeatures';
 
 export default function ProfilePage() {
-  const { activeProfile, profiles, user, setActiveProfile, updateProfile, createProfile, setEntitlementLevel } = useProfile();
+  const { activeProfile, profiles, user, setActiveProfile, updateProfile, createProfile, setEntitlementLevel, addFamilyMember, removeFamilyMember } = useProfile();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState(activeProfile?.name || '');
   const [sensitivity, setSensitivity] = useState(activeProfile?.sensitivity || 'medium');
@@ -31,7 +31,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 sticky top-0 z-50">
+      <header className="border-b border-border bg-card/50 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
