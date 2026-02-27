@@ -38,7 +38,7 @@ export interface Place {
   addedAt: string;
 }
 
-export interface Indian City {
+export interface IndianCity {
   name: string;
   state: string;
   latitude: number;
