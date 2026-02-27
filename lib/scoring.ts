@@ -230,13 +230,14 @@ export class ScoringEngine {
     }
 
     // Temperature-based adjustments
+    let filteredActivities = activities;
     if (temp < 15) {
-      activities = activities.filter((a) => a !== 'outdoor-sports');
+      filteredActivities = filteredActivities.filter((a) => a !== 'outdoor-sports');
     } else if (temp > 30) {
-      activities = activities.filter((a) => a !== 'running' && a !== 'outdoor-sports');
+      filteredActivities = filteredActivities.filter((a) => a !== 'running' && a !== 'outdoor-sports');
     }
 
-    return activities.length > 0 ? activities : ['indoor-workout'];
+    return filteredActivities.length > 0 ? filteredActivities : ['indoor-workout'];
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Place, Indian City } from './types';
+import { Place, type Indian City } from './types';
 import indianCities from '@/data/indian-cities.json';
 
 export class PlacesManager {
