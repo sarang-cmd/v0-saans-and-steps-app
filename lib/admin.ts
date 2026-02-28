@@ -76,7 +76,10 @@ class AdminManager {
   private tapTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
-    this.loadStateFromStorage();
+    // Defer storage loading to client-side only
+    if (typeof window !== 'undefined') {
+      this.loadStateFromStorage();
+    }
     this.initializeDefaultFlags();
   }
 
@@ -92,7 +95,9 @@ class AdminManager {
 
     if (this.tapCount === 7) {
       this.isAdminMode = true;
-      localStorage.setItem('admin_mode', 'true');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_mode', 'true');
+      }
       console.log('[v0] Admin mode unlocked!');
       this.tapCount = 0;
       return;
@@ -117,14 +122,16 @@ class AdminManager {
    */
   setAdminUser(admin: AdminUser): void {
     this.currentAdmin = admin;
-    localStorage.setItem('admin_user', JSON.stringify(admin));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_user', JSON.stringify(admin));
+    }
   }
 
   /**
    * Get current admin
    */
   getAdminUser(): AdminUser | null {
-    if (!this.currentAdmin) {
+    if (!this.currentAdmin && typeof window !== 'undefined') {
       const stored = localStorage.getItem('admin_user');
       if (stored) {
         try {
@@ -211,6 +218,7 @@ class AdminManager {
     plan: 'free' | 'no-ads' | 'pro' | 'max',
     durationDays: number = 30
   ): void {
+    if (typeof window === 'undefined') return;
     const entitlements = JSON.parse(localStorage.getItem('admin_grants') || '{}');
     entitlements[userId] = {
       plan,
@@ -225,6 +233,7 @@ class AdminManager {
    * Get admin grants
    */
   getAdminGrants(): Record<string, any> {
+    if (typeof window === 'undefined') return {};
     try {
       return JSON.parse(localStorage.getItem('admin_grants') || '{}');
     } catch {
@@ -342,6 +351,7 @@ class AdminManager {
    * Save state to localStorage
    */
   private saveStateToStorage(): void {
+    if (typeof window === 'undefined') return;
     try {
       const flags = Array.from(this.featureFlags.entries());
       localStorage.setItem('admin_feature_flags', JSON.stringify(flags));
@@ -355,6 +365,7 @@ class AdminManager {
    * Load state from localStorage
    */
   private loadStateFromStorage(): void {
+    if (typeof window === 'undefined') return;
     try {
       const flags = localStorage.getItem('admin_feature_flags');
       if (flags) {
@@ -372,5 +383,31 @@ class AdminManager {
   }
 }
 
-// Singleton instance
-export const adminManager = new AdminManager();
+// Lazy singleton instance (only instantiated on client-side)
+let adminInstance: AdminManager | null = null;
+
+export function getAdminManager(): AdminManager {
+  if (typeof window === 'undefined') {
+    return new AdminManager();
+  }
+  if (!adminInstance) {
+    adminInstance = new AdminManager();
+  }
+  return adminInstance;
+}
+
+// For backward compatibility
+export const adminManager = {
+  registerLogoTap: () => getAdminManager().registerLogoTap(),
+  getAdminMode: () => getAdminManager().getAdminMode(),
+  setAdminUser: (admin: any) => getAdminManager().setAdminUser(admin),
+  getAdminUser: () => getAdminManager().getAdminUser(),
+  grantEntitlement: (userId: string, plan: any, durationDays?: number) => getAdminManager().grantEntitlement(userId, plan, durationDays),
+  getAdminGrants: () => getAdminManager().getAdminGrants(),
+  setFeatureFlag: (flag: any, enabled: boolean) => getAdminManager().setFeatureFlag(flag, enabled),
+  getFeatureFlag: (flag: any) => getAdminManager().getFeatureFlag(flag),
+  getAllFeatureFlags: () => getAdminManager().getAllFeatureFlags(),
+  recordTestSession: (result: any) => getAdminManager().recordTestSession(result),
+  getTestSessions: () => getAdminManager().getTestSessions(),
+  getMockAdminUser: () => getAdminManager().getMockAdminUser(),
+};
