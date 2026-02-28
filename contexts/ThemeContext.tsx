@@ -17,13 +17,46 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
+  // Define applyTheme function first
+  const applyTheme = React.useCallback((newTheme: Theme) => {
+    if (typeof document === 'undefined') return;
+
+    let actualTheme: 'light' | 'dark';
+    
+    if (newTheme === 'auto') {
+      actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else {
+      actualTheme = newTheme;
+    }
+
+    setResolvedTheme(actualTheme);
+    
+    const html = document.documentElement;
+    if (actualTheme === 'dark') {
+      html.classList.add('dark');
+      html.style.colorScheme = 'dark';
+    } else {
+      html.classList.remove('dark');
+      html.style.colorScheme = 'light';
+    }
+  }, []);
+
+  const setTheme = React.useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('app_theme', newTheme);
+    }
+    applyTheme(newTheme);
+  }, [applyTheme]);
+
   // Load theme from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('app_theme') as Theme || 'auto';
+    if (typeof window === 'undefined') return;
+    const savedTheme = (localStorage.getItem('app_theme') as Theme) || 'auto';
     setThemeState(savedTheme);
     setMounted(true);
     applyTheme(savedTheme);
-  }, []);
+  }, [applyTheme]);
 
   // Watch for system theme changes
   useEffect(() => {
@@ -40,34 +73,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
-
-  const applyTheme = (newTheme: Theme) => {
-    if (typeof document === 'undefined') return;
-
-    let actualTheme: 'light' | 'dark';
-    
-    if (newTheme === 'auto') {
-      actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } else {
-      actualTheme = newTheme;
-    }
-
-    setResolvedTheme(actualTheme);
-    
-    const html = document.documentElement;
-    if (actualTheme === 'dark') {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
-  };
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('app_theme', newTheme);
-    applyTheme(newTheme);
-  };
+  }, [theme, applyTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>

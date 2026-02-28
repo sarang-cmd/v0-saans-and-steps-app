@@ -62,8 +62,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${_geist.variable} ${_geistMono.variable}`}>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${_geist.variable} ${_geistMono.variable} antialiased`}>
+      <body className="font-sans bg-background text-foreground" suppressHydrationWarning>
         <FontInitializer />
         <ThemeShortcutHandler />
         <LanguageProvider>

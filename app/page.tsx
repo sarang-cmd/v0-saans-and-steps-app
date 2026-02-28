@@ -74,10 +74,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AshokaChakraWatermark opacity={0.05} />
-      
       {/* Header with Tricolor Wave */}
       <header className="relative overflow-hidden border-b border-border">
+        <AshokaChakraWatermark opacity={0.05} />
         <TricolorWaveHeader />
         <div className="px-4 md:px-6 py-6 relative z-10">
           <div className="max-w-6xl mx-auto">
