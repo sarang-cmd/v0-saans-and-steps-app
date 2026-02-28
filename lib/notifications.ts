@@ -36,8 +36,11 @@ class NotificationManager {
   private listeners: Set<(notifications: Notification[]) => void> = new Set();
 
   constructor() {
-    this.loadFromStorage();
-    this.checkPermissions();
+    // Defer storage loading to client-side only
+    if (typeof window !== 'undefined') {
+      this.loadFromStorage();
+      this.checkPermissions();
+    }
   }
 
   /**
@@ -334,9 +337,10 @@ class NotificationManager {
   }
 
   /**
-   * Save to localStorage
+   * Save notifications to localStorage
    */
   private saveToStorage(): void {
+    if (typeof window === 'undefined') return;
     try {
       const notifications = Array.from(this.notifications.entries());
       const reminders = Array.from(this.reminders.entries());
@@ -346,17 +350,29 @@ class NotificationManager {
       console.error('[v0] Error saving notifications:', error);
     }
   }
+  }
 
   /**
-   * Load from localStorage
+   * Load notifications from localStorage
    */
   private loadFromStorage(): void {
+    if (typeof window === 'undefined') return;
     try {
       const notifications = localStorage.getItem('app_notifications');
       if (notifications) {
         const entries = JSON.parse(notifications);
         this.notifications = new Map(entries);
       }
+
+      const reminders = localStorage.getItem('app_reminders');
+      if (reminders) {
+        const entries = JSON.parse(reminders);
+        this.reminders = new Map(entries);
+      }
+    } catch (error) {
+      console.error('[v0] Error loading notifications:', error);
+    }
+  }
 
       const reminders = localStorage.getItem('app_reminders');
       if (reminders) {
@@ -376,5 +392,29 @@ class NotificationManager {
   }
 }
 
-// Singleton instance
-export const notificationManager = new NotificationManager();
+// Lazy singleton instance (only instantiated on client-side)
+let notificationInstance: NotificationManager | null = null;
+
+export function getNotificationManager(): NotificationManager {
+  if (typeof window === 'undefined') {
+    return new NotificationManager();
+  }
+  if (!notificationInstance) {
+    notificationInstance = new NotificationManager();
+  }
+  return notificationInstance;
+}
+
+// For backward compatibility
+export const notificationManager = {
+  requestPermission: () => getNotificationManager().requestPermission(),
+  sendNotification: (title: string, options?: any) => getNotificationManager().sendNotification(title, options),
+  createNotification: (title: string, options?: any) => getNotificationManager().createNotification(title, options),
+  dismissNotification: (id: string) => getNotificationManager().dismissNotification(id),
+  getNotifications: () => getNotificationManager().getNotifications(),
+  createReminder: (name: string, schedule: any) => getNotificationManager().createReminder(name, schedule),
+  removeReminder: (id: string) => getNotificationManager().removeReminder(id),
+  getReminders: () => getNotificationManager().getReminders(),
+  subscribe: (listener: any) => getNotificationManager().subscribe(listener),
+  unsubscribe: (listener: any) => getNotificationManager().unsubscribe(listener),
+};
