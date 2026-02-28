@@ -5,6 +5,8 @@ import { ProfileProvider } from '@/contexts/ProfileContext'
 import { DataProvider } from '@/contexts/DataContext'
 import { TopNavigation, BottomNavigation } from '@/components/Navigation'
 import { OfflineNotification, ServiceWorkerRegister } from '@/components/OfflineNotification'
+import { NotificationsCenter } from '@/components/NotificationsCenter'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -61,6 +63,7 @@ export default function RootLayout({
           <DataProvider>
             <ServiceWorkerRegister />
             <OfflineNotification />
+            <NotificationsCenter />
             <TopNavigation />
             <main className="md:pt-20 md:pb-0 pb-24">
               {children}

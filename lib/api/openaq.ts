@@ -4,7 +4,9 @@ import { StorageCache } from '../storage';
 export class OpenAQClient {
   private apiKey: string = '';
   private readonly API_BASE_URL = 'https://api.openaq.org/v2';
-  private readonly DEMO_MODE = true; // Enable demo mode by default
+  private useDemoMode: boolean = false; // Default to real API (no key required)
+  private lastFetchTime: { [key: string]: number } = {};
+  private readonly RATE_LIMIT_MS = 5000; // 5 second rate limit per location
 
   constructor(apiKey?: string) {
     if (apiKey) {
@@ -14,6 +16,10 @@ export class OpenAQClient {
 
   setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
+  }
+
+  setDemoMode(enabled: boolean): void {
+    this.useDemoMode = enabled;
   }
 
   /**
@@ -34,8 +40,8 @@ export class OpenAQClient {
     }
 
     try {
-      // Try real API if key available
-      if (this.apiKey && !this.DEMO_MODE) {
+      // Try real API first (OpenAQ v2 is free, no key required)
+      if (!this.useDemoMode) {
         const data = await this.fetchFromOpenAQ(latitude, longitude);
         if (data) {
           StorageCache.setAirQualityCache(placeId, data);
@@ -43,7 +49,7 @@ export class OpenAQClient {
         }
       }
 
-      // Fallback to demo data
+      // Fallback to demo data if real API fails or demo mode enabled
       const demoData = this.generateDemoData(placeId, latitude, longitude);
       StorageCache.setAirQualityCache(placeId, demoData);
       return demoData;

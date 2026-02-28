@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ENTITLEMENTS } from '@/lib/types';
 import { FamilyFeatures } from '@/components/FamilyFeatures';
+import { PaymentModal } from '@/components/PaymentModal';
+import { AdminPanel } from '@/components/AdminPanel';
 
 export default function ProfilePage() {
   const { activeProfile, profiles, user, setActiveProfile, updateProfile, createProfile, setEntitlementLevel, addFamilyMember, removeFamilyMember } = useProfile();
@@ -13,6 +15,7 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState(activeProfile?.name || '');
   const [sensitivity, setSensitivity] = useState(activeProfile?.sensitivity || 'medium');
   const [accessibilityMode, setAccessibilityMode] = useState(activeProfile?.accessibilityMode || 'normal');
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
   const handleSaveProfile = () => {
     if (activeProfile) {
@@ -24,6 +27,10 @@ export default function ProfilePage() {
       });
       setIsEditingProfile(false);
     }
+  };
+
+  const handlePaymentSuccess = (plan: any) => {
+    setEntitlementLevel(plan);
   };
 
   const currentEntitlements = user ? ENTITLEMENTS[user.entitlementLevel] : ENTITLEMENTS.free;
@@ -46,6 +53,36 @@ export default function ProfilePage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-8">
+        {/* Admin Panel */}
+        <AdminPanel />
+
+        {/* Current Plan */}
+        <Card className="mb-8 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+          <CardHeader>
+            <CardTitle>Your Plan</CardTitle>
+            <CardDescription>Upgrade to unlock more features</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-foreground/70">Current Plan</p>
+                <p className="text-2xl font-bold text-primary capitalize">{user?.entitlementLevel || 'free'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-foreground/70">Features</p>
+                <p className="text-sm text-foreground mt-1">
+                  {currentEntitlements.watchLimit} cities • {currentEntitlements.exportFormats.join(', ')} export
+                </p>
+              </div>
+            </div>
+            {user?.entitlementLevel !== 'max' && (
+              <Button onClick={() => setIsPaymentOpen(true)} className="w-full">
+                Upgrade Now
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Profile Selection */}
         <Card className="mb-8">
           <CardHeader>
@@ -274,6 +311,31 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
+        {/* Firebase Setup */}
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Cloud Integration</CardTitle>
+              <CardDescription>Optional Firebase setup for cloud sync</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" asChild>
+                <a href="/firebase-setup">Configure Firebase</a>
+              </Button>
+              <p className="text-sm text-foreground/60 mt-4">
+                Firebase is completely optional. Your data is saved locally by default.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Settings */}
+        <div className="mt-8">
+          <Button variant="outline" asChild className="w-full md:w-auto">
+            <a href="/settings">Notifications & Reminders Settings</a>
+          </Button>
+        </div>
+
         {/* Family Features Section */}
         <div className="mt-8">
           <h2 className="text-xl font-bold text-foreground mb-4">Family & Social</h2>
@@ -292,6 +354,14 @@ export default function ProfilePage() {
           </p>
         </div>
       </main>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onSuccess={handlePaymentSuccess}
+        currentPlan={user?.entitlementLevel || 'free'}
+      />
     </div>
   );
 }
