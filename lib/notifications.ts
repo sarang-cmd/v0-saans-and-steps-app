@@ -350,7 +350,6 @@ class NotificationManager {
       console.error('[v0] Error saving notifications:', error);
     }
   }
-  }
 
   /**
    * Load notifications from localStorage
@@ -363,16 +362,6 @@ class NotificationManager {
         const entries = JSON.parse(notifications);
         this.notifications = new Map(entries);
       }
-
-      const reminders = localStorage.getItem('app_reminders');
-      if (reminders) {
-        const entries = JSON.parse(reminders);
-        this.reminders = new Map(entries);
-      }
-    } catch (error) {
-      console.error('[v0] Error loading notifications:', error);
-    }
-  }
 
       const reminders = localStorage.getItem('app_reminders');
       if (reminders) {
