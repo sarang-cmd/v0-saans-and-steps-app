@@ -122,25 +122,6 @@ class NotificationManager {
     return notification;
   }
 
-  async notifyOptimalWindow(city: string, time: string, score: number): Promise<void> {
-    await this.createNotification(
-      'optimal-window',
-      'Optimal Workout Window',
-      `Great time to exercise in ${city} at ${time} (Score: ${score}%)`,
-      { icon: '🏃', actionUrl: '/', priority: 'high' }
-    );
-  }
-
-  async notifyAirQualityAlert(city: string, aqi: number, status: string): Promise<void> {
-    const priority = aqi > 200 ? 'high' : 'medium';
-    await this.createNotification(
-      'air-quality-alert',
-      'Air Quality Alert',
-      `Air quality in ${city} is ${status} (AQI: ${aqi})`,
-      { icon: '🌫️', actionUrl: '/', priority }
-    );
-  }
-
   getNotifications(unreadOnly = false): Notification[] {
     const notifs = Array.from(this.notifications.values());
     if (unreadOnly) {
@@ -315,11 +296,15 @@ export function getNotificationManager(): NotificationManager {
 export const notificationManager = {
   requestPermission: () => getNotificationManager().requestPermission(),
   sendNotification: (n: Notification) => getNotificationManager().sendNotification(n),
-  createNotification: (type: NotificationType, title: string, message: string, options?: any) => getNotificationManager().createNotification(type, title, message, options),
+  createNotification: (type: NotificationType, title: string, message: string, options?: any) =>
+    getNotificationManager().createNotification(type, title, message, options),
   deleteNotification: (id: string) => getNotificationManager().deleteNotification(id),
+  markAsRead: (id: string) => getNotificationManager().markAsRead(id),
   getNotifications: (unread?: boolean) => getNotificationManager().getNotifications(unread),
-  createReminder: (title: string, message: string, time: string, type?: 'daily' | 'weekly' | 'custom', days?: number[]) => getNotificationManager().createReminder(title, message, time, type, days),
+  createReminder: (title: string, message: string, time: string, type?: 'daily' | 'weekly' | 'custom', days?: number[]) =>
+    getNotificationManager().createReminder(title, message, time, type, days),
   deleteReminder: (id: string) => getNotificationManager().deleteReminder(id),
   getReminders: () => getNotificationManager().getReminders(),
+  updateReminder: (id: string, updates: any) => getNotificationManager().updateReminder(id, updates),
   subscribe: (fn: (n: Notification[]) => void) => getNotificationManager().subscribe(fn),
 };
