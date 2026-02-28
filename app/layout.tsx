@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { DataProvider } from '@/contexts/DataContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import { TopNavigation, BottomNavigation } from '@/components/Navigation'
 import { OfflineNotification, ServiceWorkerRegister } from '@/components/OfflineNotification'
 import { NotificationsCenter } from '@/components/NotificationsCenter'
@@ -63,21 +64,23 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <FontInitializer />
-        <ThemeProvider>
-          <ProfileProvider>
-            <DataProvider>
-              <ServiceWorkerRegister />
-              <OfflineNotification />
-              <NotificationsCenter />
-              <TopNavigation />
-              <main className="md:pt-20 md:pb-0 pb-24">
-                {children}
-              </main>
-              <BottomNavigation />
-              <CursorThemeSwitcher />
-            </DataProvider>
-          </ProfileProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <ProfileProvider>
+              <DataProvider>
+                <ServiceWorkerRegister />
+                <OfflineNotification />
+                <NotificationsCenter />
+                <TopNavigation />
+                <main className="md:pt-20 md:pb-0 pb-24">
+                  {children}
+                </main>
+                <BottomNavigation />
+                <CursorThemeSwitcher />
+              </DataProvider>
+            </ProfileProvider>
+          </ThemeProvider>
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>
