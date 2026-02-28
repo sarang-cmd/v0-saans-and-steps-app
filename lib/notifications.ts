@@ -36,10 +36,7 @@ class NotificationManager {
   private listeners: Set<(notifications: Notification[]) => void> = new Set();
 
   constructor() {
-    // Defer storage loading to client-side only
-    if (typeof window !== 'undefined') {
-      this.loadFromStorage();
-    }
+    this.loadFromStorage();
     this.checkPermissions();
   }
 
@@ -340,7 +337,6 @@ class NotificationManager {
    * Save to localStorage
    */
   private saveToStorage(): void {
-    if (typeof window === 'undefined') return; // Skip on server-side
     try {
       const notifications = Array.from(this.notifications.entries());
       const reminders = Array.from(this.reminders.entries());
@@ -355,7 +351,6 @@ class NotificationManager {
    * Load from localStorage
    */
   private loadFromStorage(): void {
-    if (typeof window === 'undefined') return; // Skip on server-side
     try {
       const notifications = localStorage.getItem('app_notifications');
       if (notifications) {
@@ -381,28 +376,5 @@ class NotificationManager {
   }
 }
 
-// Lazy singleton instance (only instantiated on client-side)
-let notificationInstance: NotificationManager | null = null;
-
-export function getNotificationManager(): NotificationManager {
-  if (typeof window === 'undefined') {
-    return new NotificationManager();
-  }
-  if (!notificationInstance) {
-    notificationInstance = new NotificationManager();
-  }
-  return notificationInstance;
-}
-
-// For backward compatibility
-export const notificationManager = {
-  requestPermission: () => getNotificationManager().requestPermission(),
-  show: (title: string, options?: any) => getNotificationManager().show(title, options),
-  addNotification: (notification: any) => getNotificationManager().addNotification(notification),
-  removeNotification: (id: string) => getNotificationManager().removeNotification(id),
-  getNotifications: () => getNotificationManager().getNotifications(),
-  createReminder: (reminder: any) => getNotificationManager().createReminder(reminder),
-  getReminders: () => getNotificationManager().getReminders(),
-  cancelReminder: (id: string) => getNotificationManager().cancelReminder(id),
-  subscribe: (listener: any) => getNotificationManager().subscribe(listener),
-};
+// Singleton instance
+export const notificationManager = new NotificationManager();
