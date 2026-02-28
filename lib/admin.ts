@@ -406,6 +406,7 @@ export const adminManager = {
   getAdminGrants: () => getAdminManager().getAdminGrants(),
   setFeatureFlag: (flag: any, enabled: boolean) => getAdminManager().setFeatureFlag(flag, enabled),
   getFeatureFlag: (flag: any) => getAdminManager().getFeatureFlag(flag),
+  getAllFlags: () => getAdminManager().getAllFlags(),
   getAllFeatureFlags: () => getAdminManager().getAllFeatureFlags(),
   recordTestSession: (result: any) => getAdminManager().recordTestSession(result),
   getTestSessions: () => getAdminManager().getTestSessions(),
