@@ -82,27 +82,30 @@ export const TopNavigation: React.FC = () => {
           Saans & Steps
         </Link>
 
-        <div className="flex items-center gap-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-1 transition-colors px-3 py-2 rounded-lg',
-                pathname === item.href
-                  ? 'text-primary font-semibold bg-primary/10'
-                  : 'text-foreground/70 hover:text-foreground'
-              )}
-            >
-              <span>{item.icon}</span>
-              <span className="text-sm font-medium">{item.name}</span>
-            </Link>
-          ))}
-          <div className="border-l border-border pl-8 flex items-center gap-4">
+        <div className="flex items-center justify-between flex-1 ml-12">
+          {/* Main Navigation */}
+          <div className="flex items-center gap-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-1.5 transition-colors px-3 py-2 rounded-lg text-sm font-medium',
+                  pathname === item.href
+                    ? 'text-primary font-semibold bg-primary/10'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-foreground/5'
+                )}
+              >
+                <span>{item.icon}</span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Right-side Controls - Spaced Out */}
+          <div className="flex items-center gap-3 border-l border-border/30 pl-8">
             <ThemeSwitcher />
-            <div className="border-l border-border pl-4">
-              <LanguageSwitcher />
-            </div>
+            <LanguageSwitcher />
           </div>
         </div>
       </div>

@@ -199,7 +199,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useData = () => {
   const context = useContext(DataContext);
   if (!context) {
-    throw new Error('useData must be used within DataProvider');
+    return {
+      airQualityData: null,
+      weatherData: null,
+      isLoading: false,
+      error: null,
+      fetchAirQuality: () => Promise.resolve(null),
+      fetchWeather: () => Promise.resolve(null),
+      calculateOptimalWindows: () => [],
+    };
   }
   return context;
 };

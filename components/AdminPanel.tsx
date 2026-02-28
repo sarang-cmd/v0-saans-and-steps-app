@@ -4,12 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { adminManager, type FeatureFlag } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export function AdminPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [admin, setAdmin] = useState(adminManager.getMockAdmin());
+  const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'grants' | 'payments' | 'settings'>('overview');
   const [flags, setFlags] = useState(adminManager.getAllFlags());
-  const [activeTab, setActiveTab] = useState<'flags' | 'grants' | 'payments'>('flags');
+  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('glassmorphism_enabled') === 'true';
+    }
+    return false;
+  });
+  const { theme } = useTheme();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -21,64 +28,77 @@ export function AdminPanel() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const handleToggleFlag = (flag: FeatureFlag) => {
-    adminManager.toggleFeature(flag);
+  const handleToggleFlag = (flagName: string) => {
+    adminManager.setFeatureFlag(flagName, !flags.find(f => f.name === flagName)?.enabled);
     setFlags(adminManager.getAllFlags());
   };
 
+  const handleToggleGlassmorphism = () => {
+    const newValue = !glassmorphismEnabled;
+    setGlassmorphismEnabled(newValue);
+    localStorage.setItem('glassmorphism_enabled', String(newValue));
+    
+    const html = document.documentElement;
+    if (newValue) {
+      html.classList.add('glassmorphism-mode');
+    } else {
+      html.classList.remove('glassmorphism-mode');
+    }
+  };
+
   const handleGrantPlan = (plan: 'free' | 'no-ads' | 'pro' | 'max') => {
-    const userId = (window as any).currentUserId || 'demo-user';
-    adminManager.grantEntitlement(userId, plan, 30);
-    alert(`Granted ${plan} plan to ${userId}`);
+    adminManager.grantEntitlement('current-user', plan, 30);
+    alert(`✓ Granted ${plan} plan for 30 days`);
   };
 
-  const handleMockPayment = async () => {
-    const { paymentManager } = await import('@/lib/payments');
-    const userId = (window as any).currentUserId || 'demo-user';
-    const payment = await paymentManager.processMockPayment('pro', userId, 'mock');
-    alert(`Mock payment created: ${payment.id}`);
-  };
+  const isAdminMode = adminManager.getAdminMode();
 
-  if (!adminManager.isAdminModeActive()) {
+  if (!isAdminMode) {
     return null;
   }
 
+  const glassClass = glassmorphismEnabled 
+    ? 'glass shadow-2xl backdrop-blur-lg' 
+    : 'bg-card border border-border shadow-lg';
+
   return (
-    <div className="fixed bottom-24 right-4 z-40 max-w-sm">
+    <div className="fixed bottom-32 right-6 z-40 w-80">
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:shadow-xl transition"
+          className="glass bg-primary/80 text-primary-foreground rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition flex items-center justify-center font-bold text-lg"
           title="Admin Panel (Ctrl+Shift+A)"
         >
           ⚙️
         </button>
       ) : (
-        <Card className="bg-card border-border shadow-2xl max-h-96 overflow-y-auto">
-          <CardHeader className="sticky top-0 bg-card border-b">
+        <Card className={`max-h-[600px] overflow-y-auto ${glassClass}`}>
+          <CardHeader className="sticky top-0 bg-background/80 backdrop-blur border-b border-border">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg">QA Admin Panel</CardTitle>
+              <div>
+                <CardTitle className="text-lg">Admin Panel</CardTitle>
+                <CardDescription className="text-xs">QA Testing & Feature Control</CardDescription>
+              </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-foreground/60 hover:text-foreground"
+                className="text-foreground/60 hover:text-foreground text-xl font-bold"
               >
                 ✕
               </button>
             </div>
-            <CardDescription>{admin.email} (Credits: {admin.credits})</CardDescription>
           </CardHeader>
 
-          <CardContent className="p-4 space-y-4">
-            {/* Tabs */}
-            <div className="flex gap-2 border-b border-border">
-              {(['flags', 'grants', 'payments'] as const).map((tab) => (
+          <CardContent className="p-4">
+            {/* Tab Navigation */}
+            <div className="flex flex-wrap gap-1 mb-4 pb-3 border-b border-border/30">
+              {(['overview', 'features', 'grants', 'payments', 'settings'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-2 text-sm font-medium transition ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded transition ${
                     activeTab === tab
-                      ? 'border-b-2 border-primary text-primary'
-                      : 'text-foreground/60 hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/10'
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -86,38 +106,62 @@ export function AdminPanel() {
               ))}
             </div>
 
-            {/* Feature Flags Tab */}
-            {activeTab === 'flags' && (
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                <p className="text-xs text-foreground/60 font-medium">TOGGLE FEATURES</p>
-                {flags.slice(0, 10).map((flag) => (
-                  <div
-                    key={flag.name}
-                    className="flex items-center justify-between p-2 rounded bg-muted/30 hover:bg-muted/50"
-                  >
-                    <div className="flex-1">
-                      <p className="text-xs font-mono font-bold">{flag.name}</p>
-                      <p className="text-xs text-foreground/60">{flag.description}</p>
-                    </div>
-                    <button
-                      onClick={() => handleToggleFlag(flag.name)}
-                      className={`ml-2 px-2 py-1 text-xs rounded font-medium transition ${
-                        flag.enabled
-                          ? 'bg-green-500/20 text-green-700 dark:text-green-400'
-                          : 'bg-red-500/20 text-red-700 dark:text-red-400'
-                      }`}
-                    >
-                      {flag.enabled ? 'ON' : 'OFF'}
-                    </button>
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground/70">ADMIN INFO</p>
+                  <div className="text-xs bg-muted/30 rounded p-2 space-y-1">
+                    <p><span className="font-mono">Theme:</span> {theme}</p>
+                    <p><span className="font-mono">Mode:</span> Admin Active ✓</p>
+                    <p><span className="font-mono">Glassmorphism:</span> {glassmorphismEnabled ? 'ON' : 'OFF'}</p>
                   </div>
-                ))}
+                </div>
+                <Button
+                  onClick={handleToggleGlassmorphism}
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                >
+                  {glassmorphismEnabled ? 'Disable' : 'Enable'} Glassmorphism
+                </Button>
+              </div>
+            )}
+
+            {/* Features Tab */}
+            {activeTab === 'features' && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-foreground/70 mb-2">FEATURE FLAGS</p>
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {flags.slice(0, 12).map((flag) => (
+                    <div
+                      key={flag.name}
+                      className="flex items-center justify-between p-2 rounded border border-border/30 hover:bg-muted/30 transition"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-mono font-bold truncate">{flag.name}</p>
+                        <p className="text-xs text-foreground/50 truncate">{flag.description}</p>
+                      </div>
+                      <button
+                        onClick={() => handleToggleFlag(flag.name)}
+                        className={`ml-2 px-2 py-1 text-xs rounded font-medium text-xs whitespace-nowrap ${
+                          flag.enabled
+                            ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                            : 'bg-red-500/20 text-red-700 dark:text-red-400'
+                        }`}
+                      >
+                        {flag.enabled ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Grants Tab */}
             {activeTab === 'grants' && (
-              <div className="space-y-2">
-                <p className="text-xs text-foreground/60 font-medium">GRANT ENTITLEMENTS</p>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground/70">GRANT PLANS</p>
                 <div className="grid grid-cols-2 gap-2">
                   {(['free', 'no-ads', 'pro', 'max'] as const).map((plan) => (
                     <Button
@@ -125,29 +169,58 @@ export function AdminPanel() {
                       onClick={() => handleGrantPlan(plan)}
                       size="sm"
                       variant="outline"
-                      className="text-xs"
+                      className="text-xs h-8"
                     >
                       {plan}
                     </Button>
                   ))}
+                </div>
+                <div className="text-xs bg-muted/30 rounded p-2">
+                  <p className="font-mono">All plans grant 30-day access</p>
                 </div>
               </div>
             )}
 
             {/* Payments Tab */}
             {activeTab === 'payments' && (
-              <div className="space-y-2">
-                <p className="text-xs text-foreground/60 font-medium">MOCK PAYMENTS</p>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground/70">PAYMENT TESTING</p>
                 <Button
-                  onClick={handleMockPayment}
                   size="sm"
                   className="w-full text-xs"
+                  onClick={() => alert('Mock payment flow configured')}
                 >
-                  Create Mock Payment
+                  Test Payment Flow
                 </Button>
-                <div className="text-xs bg-muted/30 p-2 rounded">
-                  <p className="font-mono text-foreground/60">Admin Credits: {admin.credits}</p>
-                  <p className="text-foreground/60 mt-1">Use to test payment flow</p>
+                <div className="text-xs bg-muted/30 rounded p-2 space-y-1">
+                  <p><span className="font-mono">Status:</span> Mock Mode Active</p>
+                  <p><span className="font-mono">Gateway:</span> Stripe Mock</p>
+                </div>
+              </div>
+            )}
+
+            {/* Settings Tab */}
+            {activeTab === 'settings' && (
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground/70">VISUAL SETTINGS</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 rounded border border-border/30">
+                    <span className="text-xs font-medium">Glassmorphism Design</span>
+                    <button
+                      onClick={handleToggleGlassmorphism}
+                      className={`w-10 h-6 rounded-full transition flex items-center ${
+                        glassmorphismEnabled
+                          ? 'bg-primary/70 justify-end'
+                          : 'bg-muted justify-start'
+                      }`}
+                    >
+                      <div className="w-5 h-5 bg-white rounded-full" />
+                    </button>
+                  </div>
+                </div>
+                <div className="text-xs bg-muted/30 rounded p-2">
+                  <p className="font-mono mb-1">Shortcut: Ctrl+Shift+A</p>
+                  <p className="text-foreground/60">Toggle admin panel on/off</p>
                 </div>
               </div>
             )}

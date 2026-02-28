@@ -268,3 +268,31 @@
     animation: shimmer 2s infinite;
   }
 }
+
+/* Glassmorphism Mode */
+html.glassmorphism-mode {
+  --card: rgba(255, 255, 255, 0.1);
+  --popover: rgba(255, 255, 255, 0.1);
+}
+
+html.glassmorphism-mode .dark {
+  --card: rgba(0, 0, 0, 0.2);
+  --popover: rgba(0, 0, 0, 0.2);
+}
+
+html.glassmorphism-mode .card,
+html.glassmorphism-mode [class*="card"],
+html.glassmorphism-mode .popover {
+  @apply glass;
+}
+
+html.glassmorphism-mode button,
+html.glassmorphism-mode [role="button"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.glassmorphism-mode button:hover,
+html.glassmorphism-mode [role="button"]:hover {
+  @apply shadow-lg;
+  background: rgba(255, 255, 255, 0.15);
+}

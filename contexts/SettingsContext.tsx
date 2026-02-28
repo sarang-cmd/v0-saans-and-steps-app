@@ -136,7 +136,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 export function useSettings() {
   const context = useContext(SettingsContext);
   if (!context) {
-    throw new Error('useSettings must be used within SettingsProvider');
+    return {
+      language: 'en' as const,
+      setLanguage: () => {},
+      theme: 'auto' as const,
+      setTheme: () => {},
+    };
   }
   return context;
 }
