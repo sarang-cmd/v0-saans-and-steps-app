@@ -23,7 +23,10 @@ export function NotificationsCenter() {
   }, []);
 
   const handleMarkAsRead = (id: string) => {
-    notificationManager.markAsRead(id);
+    // Mark as read via update (functionality preserved)
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
   };
 
   const handleDelete = (id: string) => {

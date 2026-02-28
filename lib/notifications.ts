@@ -23,8 +23,8 @@ export interface ReminderSchedule {
   type: 'daily' | 'weekly' | 'custom';
   title: string;
   message: string;
-  time: string; // HH:mm format
-  days?: number[]; // 0-6, 0 = Sunday
+  time: string;
+  days?: number[];
   enabled: boolean;
   lastTriggered?: string;
 }
@@ -36,16 +36,12 @@ class NotificationManager {
   private listeners: Set<(notifications: Notification[]) => void> = new Set();
 
   constructor() {
-    // Defer storage loading to client-side only
     if (typeof window !== 'undefined') {
       this.loadFromStorage();
       this.checkPermissions();
     }
   }
 
-  /**
-   * Request notification permissions
-   */
   async requestPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) {
       console.log('[v0] Notifications not supported');
@@ -66,9 +62,6 @@ class NotificationManager {
     }
   }
 
-  /**
-   * Send a browser notification
-   */
   async sendNotification(notification: Notification): Promise<void> {
     if (this.notificationPermission !== 'granted') {
       console.log('[v0] Notification permission not granted');
@@ -95,9 +88,6 @@ class NotificationManager {
     }
   }
 
-  /**
-   * Create and store a notification
-   */
   async createNotification(
     type: NotificationType,
     title: string,
@@ -132,50 +122,25 @@ class NotificationManager {
     return notification;
   }
 
-  /**
-   * Create optimal window notification
-   */
-  async notifyOptimalWindow(
-    city: string,
-    time: string,
-    score: number
-  ): Promise<void> {
+  async notifyOptimalWindow(city: string, time: string, score: number): Promise<void> {
     await this.createNotification(
       'optimal-window',
       'Optimal Workout Window',
       `Great time to exercise in ${city} at ${time} (Score: ${score}%)`,
-      {
-        icon: '🏃',
-        actionUrl: '/',
-        priority: 'high',
-      }
+      { icon: '🏃', actionUrl: '/', priority: 'high' }
     );
   }
 
-  /**
-   * Create air quality alert
-   */
-  async notifyAirQualityAlert(
-    city: string,
-    aqi: number,
-    status: string
-  ): Promise<void> {
+  async notifyAirQualityAlert(city: string, aqi: number, status: string): Promise<void> {
     const priority = aqi > 200 ? 'high' : 'medium';
     await this.createNotification(
       'air-quality-alert',
       'Air Quality Alert',
       `Air quality in ${city} is ${status} (AQI: ${aqi})`,
-      {
-        icon: '🌫️',
-        actionUrl: '/',
-        priority,
-      }
+      { icon: '🌫️', actionUrl: '/', priority }
     );
   }
 
-  /**
-   * Get all notifications
-   */
   getNotifications(unreadOnly = false): Notification[] {
     const notifs = Array.from(this.notifications.values());
     if (unreadOnly) {
@@ -186,9 +151,6 @@ class NotificationManager {
     );
   }
 
-  /**
-   * Mark notification as read
-   */
   markAsRead(id: string): void {
     const notif = this.notifications.get(id);
     if (notif) {
@@ -198,18 +160,12 @@ class NotificationManager {
     }
   }
 
-  /**
-   * Delete notification
-   */
   deleteNotification(id: string): void {
     this.notifications.delete(id);
     this.saveToStorage();
     this.notifyListeners();
   }
 
-  /**
-   * Create reminder schedule
-   */
   createReminder(
     title: string,
     message: string,
@@ -223,7 +179,7 @@ class NotificationManager {
       title,
       message,
       time,
-      days: days || [0, 1, 2, 3, 4, 5, 6], // All days by default
+      days: days || [0, 1, 2, 3, 4, 5, 6],
       enabled: true,
     };
 
@@ -234,16 +190,10 @@ class NotificationManager {
     return reminder;
   }
 
-  /**
-   * Get all reminders
-   */
   getReminders(): ReminderSchedule[] {
     return Array.from(this.reminders.values());
   }
 
-  /**
-   * Update reminder
-   */
   updateReminder(id: string, updates: Partial<ReminderSchedule>): void {
     const reminder = this.reminders.get(id);
     if (reminder) {
@@ -252,17 +202,11 @@ class NotificationManager {
     }
   }
 
-  /**
-   * Delete reminder
-   */
   deleteReminder(id: string): void {
     this.reminders.delete(id);
     this.saveToStorage();
   }
 
-  /**
-   * Schedule reminder to trigger at specified time
-   */
   private scheduleReminder(reminder: ReminderSchedule): void {
     if (!reminder.enabled) return;
 
@@ -279,28 +223,19 @@ class NotificationManager {
             'reminder',
             reminder.title,
             reminder.message,
-            {
-              icon: '⏰',
-              priority: 'medium',
-              sendBrowserNotification: true,
-            }
+            { icon: '⏰', priority: 'medium', sendBrowserNotification: true }
           );
-
           reminder.lastTriggered = new Date().toISOString();
           this.saveToStorage();
         }
       }
 
-      // Check again in 1 minute
       setTimeout(checkReminder, 60000);
     };
 
     checkReminder();
   }
 
-  /**
-   * Check if date is today
-   */
   private isToday(dateString: string): boolean {
     const date = new Date(dateString);
     const today = new Date();
@@ -311,34 +246,22 @@ class NotificationManager {
     );
   }
 
-  /**
-   * Subscribe to notification changes
-   */
   subscribe(listener: (notifications: Notification[]) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
-  /**
-   * Notify all listeners
-   */
   private notifyListeners(): void {
     const notifications = this.getNotifications();
     this.listeners.forEach((listener) => listener(notifications));
   }
 
-  /**
-   * Check browser notification permissions
-   */
   private checkPermissions(): void {
     if ('Notification' in window) {
       this.notificationPermission = Notification.permission;
     }
   }
 
-  /**
-   * Save notifications to localStorage
-   */
   private saveToStorage(): void {
     if (typeof window === 'undefined') return;
     try {
@@ -351,9 +274,6 @@ class NotificationManager {
     }
   }
 
-  /**
-   * Load notifications from localStorage
-   */
   private loadFromStorage(): void {
     if (typeof window === 'undefined') return;
     try {
@@ -368,7 +288,6 @@ class NotificationManager {
         const entries = JSON.parse(reminders);
         this.reminders = new Map(entries);
 
-        // Reschedule reminders on load
         this.reminders.forEach((reminder) => {
           if (reminder.enabled) {
             this.scheduleReminder(reminder);
@@ -381,7 +300,6 @@ class NotificationManager {
   }
 }
 
-// Lazy singleton instance (only instantiated on client-side)
 let notificationInstance: NotificationManager | null = null;
 
 export function getNotificationManager(): NotificationManager {
@@ -394,16 +312,14 @@ export function getNotificationManager(): NotificationManager {
   return notificationInstance;
 }
 
-// For backward compatibility
 export const notificationManager = {
   requestPermission: () => getNotificationManager().requestPermission(),
-  sendNotification: (title: string, options?: any) => getNotificationManager().sendNotification(title, options),
-  createNotification: (title: string, options?: any) => getNotificationManager().createNotification(title, options),
-  dismissNotification: (id: string) => getNotificationManager().dismissNotification(id),
-  getNotifications: () => getNotificationManager().getNotifications(),
-  createReminder: (name: string, schedule: any) => getNotificationManager().createReminder(name, schedule),
-  removeReminder: (id: string) => getNotificationManager().removeReminder(id),
+  sendNotification: (n: Notification) => getNotificationManager().sendNotification(n),
+  createNotification: (type: NotificationType, title: string, message: string, options?: any) => getNotificationManager().createNotification(type, title, message, options),
+  deleteNotification: (id: string) => getNotificationManager().deleteNotification(id),
+  getNotifications: (unread?: boolean) => getNotificationManager().getNotifications(unread),
+  createReminder: (title: string, message: string, time: string, type?: 'daily' | 'weekly' | 'custom', days?: number[]) => getNotificationManager().createReminder(title, message, time, type, days),
+  deleteReminder: (id: string) => getNotificationManager().deleteReminder(id),
   getReminders: () => getNotificationManager().getReminders(),
-  subscribe: (listener: any) => getNotificationManager().subscribe(listener),
-  unsubscribe: (listener: any) => getNotificationManager().unsubscribe(listener),
+  subscribe: (fn: (n: Notification[]) => void) => getNotificationManager().subscribe(fn),
 };
