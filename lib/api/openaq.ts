@@ -60,15 +60,16 @@ export class OpenAQClient {
   }
 
   /**
-   * Fetch data from real OpenAQ API
+   * Fetch data from real OpenAQ API via local proxy to avoid CORS
    */
   private async fetchFromOpenAQ(
     latitude: number,
     longitude: number
   ): Promise<AirQualityData | null> {
     try {
+      // Use local API route as proxy to avoid CORS issues
       const response = await fetch(
-        `${this.API_BASE_URL}/latest?coordinates=${latitude},${longitude}&radius=50000`,
+        `/api/air-quality?lat=${latitude}&lng=${longitude}`,
         {
           headers: {
             'Accept': 'application/json',
@@ -77,18 +78,23 @@ export class OpenAQClient {
       );
 
       if (!response.ok) {
-        throw new Error(`OpenAQ API error: ${response.status}`);
+        console.warn(`[v0] Air quality proxy error: ${response.status}`);
+        return null;
       }
 
       const data = await response.json();
 
-      if (!data.results || data.results.length === 0) {
+      if (!data.success) {
+        console.warn('[v0] Air quality data fetch failed:', data.error);
         return null;
       }
 
-      const result = data.results[0];
-      const pm25 = result.pm25 || 0;
-      const pm10 = result.pm10 || 0;
+      if (!data.data) {
+        return null;
+      }
+
+      const pm25 = data.data.pm25 || 0;
+      const pm10 = data.data.pm10 || 0;
 
       return {
         placeId: '',
@@ -101,7 +107,7 @@ export class OpenAQClient {
         hourlyTrend: this.generateHourlyTrend(pm25),
       };
     } catch (error) {
-      console.error('[v0] OpenAQ fetch error:', error);
+      console.warn('[v0] OpenAQ fetch error, using demo data:', error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
   }
