@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 export const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
@@ -97,8 +98,11 @@ export const TopNavigation: React.FC = () => {
               <span className="text-sm font-medium">{item.name}</span>
             </Link>
           ))}
-          <div className="border-l border-border pl-8">
-            <LanguageSwitcher />
+          <div className="border-l border-border pl-8 flex items-center gap-4">
+            <ThemeSwitcher />
+            <div className="border-l border-border pl-4">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </div>
