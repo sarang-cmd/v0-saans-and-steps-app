@@ -86,7 +86,10 @@ export class PaymentManager {
     if (stripeApiKey) {
       this.stripeApiKey = stripeApiKey;
     }
-    this.loadTransactionsFromStorage();
+    // Defer storage loading to client-side only
+    if (typeof window !== 'undefined') {
+      this.loadTransactionsFromStorage();
+    }
   }
 
   setStripeApiKey(key: string): void {
@@ -114,8 +117,10 @@ export class PaymentManager {
       createdAt: new Date().toISOString(),
     };
 
-    // Store in localStorage for demo purposes
-    localStorage.setItem(`upi_${transaction.id}`, JSON.stringify(transaction));
+    // Store in localStorage for demo purposes (client-side only)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`upi_${transaction.id}`, JSON.stringify(transaction));
+    }
 
     return transaction;
   }
@@ -143,7 +148,10 @@ export class PaymentManager {
       createdAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(`stripe_${session.id}`, JSON.stringify(session));
+    // Store session (client-side only)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`stripe_${session.id}`, JSON.stringify(session));
+    }
 
     return session;
   }
@@ -256,14 +264,20 @@ export class PaymentManager {
    * Persist transactions to localStorage
    */
   private saveTransactionsToStorage(): void {
-    const data = Array.from(this.transactions.entries());
-    localStorage.setItem('saans_payments_history', JSON.stringify(data));
+    if (typeof window === 'undefined') return; // Skip on server-side
+    try {
+      const data = Array.from(this.transactions.entries());
+      localStorage.setItem('saans_payments_history', JSON.stringify(data));
+    } catch (error) {
+      console.error('[v0] Error saving payment history:', error);
+    }
   }
 
   /**
    * Load transactions from localStorage
    */
   private loadTransactionsFromStorage(): void {
+    if (typeof window === 'undefined') return; // Skip on server-side
     try {
       const data = localStorage.getItem('saans_payments_history');
       if (data) {
@@ -276,5 +290,27 @@ export class PaymentManager {
   }
 }
 
-// Singleton instance
-export const paymentManager = new PaymentManager();
+// Lazy singleton instance (only instantiated on client-side)
+let instance: PaymentManager | null = null;
+
+export function getPaymentManager(): PaymentManager {
+  if (typeof window === 'undefined') {
+    // On server-side, return a mock instance without localStorage access
+    return new PaymentManager();
+  }
+  if (!instance) {
+    instance = new PaymentManager();
+  }
+  return instance;
+}
+
+// For backward compatibility, also export the getter as paymentManager
+export const paymentManager = {
+  createUPIIntent: (plan: any) => getPaymentManager().createUPIIntent(plan),
+  createStripeSession: (plan: any, email: string) => getPaymentManager().createStripeSession(plan, email),
+  processMockPayment: (plan: any, userId: string, method?: any) => getPaymentManager().processMockPayment(plan, userId, method),
+  confirmMockPayment: (intent: any) => getPaymentManager().confirmMockPayment(intent),
+  getTransactions: () => getPaymentManager().getTransactions(),
+  getTransaction: (id: string) => getPaymentManager().getTransaction(id),
+  setStripeApiKey: (key: string) => getPaymentManager().setStripeApiKey(key),
+};
