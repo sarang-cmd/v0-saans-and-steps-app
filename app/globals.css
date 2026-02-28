@@ -280,7 +280,10 @@ html.glassmorphism-mode .dark {
 html.glassmorphism-mode .card,
 html.glassmorphism-mode [class*="card"],
 html.glassmorphism-mode .popover {
-  @apply glass;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 2rem;
 }
 
 html.glassmorphism-mode button,
