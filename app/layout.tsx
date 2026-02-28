@@ -7,6 +7,8 @@ import { TopNavigation, BottomNavigation } from '@/components/Navigation'
 import { OfflineNotification, ServiceWorkerRegister } from '@/components/OfflineNotification'
 import { NotificationsCenter } from '@/components/NotificationsCenter'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { CursorThemeSwitcher } from '@/components/CursorThemeSwitcher'
+import { FontInitializer } from '@/components/FontInitializer'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -59,6 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
+        <FontInitializer />
         <ProfileProvider>
           <DataProvider>
             <ServiceWorkerRegister />
@@ -69,6 +72,7 @@ export default function RootLayout({
               {children}
             </main>
             <BottomNavigation />
+            <CursorThemeSwitcher />
           </DataProvider>
         </ProfileProvider>
         <Analytics />
