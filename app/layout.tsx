@@ -11,6 +11,7 @@ import { NotificationsCenter } from '@/components/NotificationsCenter'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { CursorThemeSwitcher } from '@/components/CursorThemeSwitcher'
 import { FontInitializer } from '@/components/FontInitializer'
+import { ThemeShortcutHandler } from '@/components/ThemeShortcutHandler'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -61,9 +62,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${_geist.variable} ${_geistMono.variable}`}>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <FontInitializer />
+        <ThemeShortcutHandler />
         <LanguageProvider>
           <ThemeProvider>
             <ProfileProvider>
