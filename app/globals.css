@@ -37,6 +37,10 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.92 0.005 70);
   --sidebar-ring: #0B7DBA;
+  --glass-blur: blur(20px);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --font-custom: system-ui, -apple-system;
 }
 
 .dark {
@@ -72,13 +76,6 @@
   --sidebar-accent-foreground: oklch(0.96 0.001 70);
   --sidebar-border: oklch(0.25 0.01 280);
   --sidebar-ring: #0B7DBA;
-  --glass-blur: blur(20px);
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --font-custom: system-ui, -apple-system;
-}
-
-.dark {
   --glass-blur: blur(25px);
   --glass-bg: rgba(0, 0, 0, 0.15);
   --glass-border: rgba(255, 255, 255, 0.1);
