@@ -3,8 +3,15 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { DataProvider } from '@/contexts/DataContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import { TopNavigation, BottomNavigation } from '@/components/Navigation'
 import { OfflineNotification, ServiceWorkerRegister } from '@/components/OfflineNotification'
+import { NotificationsCenter } from '@/components/NotificationsCenter'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { CursorThemeSwitcher } from '@/components/CursorThemeSwitcher'
+import { FontInitializer } from '@/components/FontInitializer'
+import { ThemeShortcutHandler } from '@/components/ThemeShortcutHandler'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -55,19 +62,27 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased" suppressHydrationWarning>
-        <ProfileProvider>
-          <DataProvider>
-            <ServiceWorkerRegister />
-            <OfflineNotification />
-            <TopNavigation />
-            <main className="md:pt-20 md:pb-0 pb-24">
-              {children}
-            </main>
-            <BottomNavigation />
-          </DataProvider>
-        </ProfileProvider>
+    <html lang="en" suppressHydrationWarning className={`${_geist.variable} ${_geistMono.variable} antialiased`}>
+      <body className="font-sans bg-background text-foreground" suppressHydrationWarning>
+        <FontInitializer />
+        <ThemeShortcutHandler />
+        <LanguageProvider>
+          <ThemeProvider>
+            <ProfileProvider>
+              <DataProvider>
+                <ServiceWorkerRegister />
+                <OfflineNotification />
+                <NotificationsCenter />
+                <TopNavigation />
+                <main className="md:pt-20 md:pb-0 pb-24">
+                  {children}
+                </main>
+                <BottomNavigation />
+                <CursorThemeSwitcher />
+              </DataProvider>
+            </ProfileProvider>
+          </ThemeProvider>
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 export const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
@@ -80,22 +82,31 @@ export const TopNavigation: React.FC = () => {
           Saans & Steps
         </Link>
 
-        <div className="flex items-center gap-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-1 transition-colors px-3 py-2 rounded-lg',
-                pathname === item.href
-                  ? 'text-primary font-semibold bg-primary/10'
-                  : 'text-foreground/70 hover:text-foreground'
-              )}
-            >
-              <span>{item.icon}</span>
-              <span className="text-sm font-medium">{item.name}</span>
-            </Link>
-          ))}
+        <div className="flex items-center justify-between flex-1 ml-12">
+          {/* Main Navigation */}
+          <div className="flex items-center gap-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-1.5 transition-colors px-3 py-2 rounded-lg text-sm font-medium',
+                  pathname === item.href
+                    ? 'text-primary font-semibold bg-primary/10'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-foreground/5'
+                )}
+              >
+                <span>{item.icon}</span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Right-side Controls - Spaced Out */}
+          <div className="flex items-center gap-3 border-l border-border/30 pl-8">
+            <ThemeSwitcher />
+            <LanguageSwitcher />
+          </div>
         </div>
       </div>
     </nav>

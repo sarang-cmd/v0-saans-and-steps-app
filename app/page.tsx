@@ -6,6 +6,7 @@ import { TricolorWaveHeader, AshokaChakraWatermark, DelhiSkylineLineArt } from '
 import { AQICard } from '@/components/AQICard';
 import { OptimalWindowsCard } from '@/components/OptimalWindowsCard';
 import { WeatherSummary, HourlyWeatherChart } from '@/components/WeatherSummary';
+import { GlassCard } from '@/components/GlassCard';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useData } from '@/contexts/DataContext';
 import { PlacesManager } from '@/lib/places';
@@ -73,10 +74,9 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AshokaChakraWatermark opacity={0.05} />
-      
       {/* Header with Tricolor Wave */}
       <header className="relative overflow-hidden border-b border-border">
+        <AshokaChakraWatermark opacity={0.05} />
         <TricolorWaveHeader />
         <div className="px-4 md:px-6 py-6 relative z-10">
           <div className="max-w-6xl mx-auto">
@@ -97,7 +97,7 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="px-4 md:px-6 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto space-y-6">
           {/* Place Selector */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">

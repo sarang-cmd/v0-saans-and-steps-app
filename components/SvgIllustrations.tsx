@@ -29,17 +29,26 @@ export const TricolorWaveHeader = () => (
 export const AshokaChakraWatermark = ({ opacity = 0.08 }) => (
   <svg
     viewBox="0 0 100 100"
-    className="absolute top-0 right-0 w-64 h-64 pointer-events-none"
-    style={{ opacity }}
+    className="absolute top-0 right-0 w-64 h-64 pointer-events-none overflow-hidden"
+    style={{ opacity, zIndex: 0 }}
   >
     <defs>
       <style>{`
-        .chakra-spoke { stroke: #0B1B3A; }
+        .chakra-spoke { stroke: currentColor; }
+        .dark .chakra-spoke { stroke: #FFFFFF; }
       `}</style>
     </defs>
     
     {/* Outer circle */}
-    <circle cx="50" cy="50" r="48" fill="none" stroke="#0B1B3A" strokeWidth="1.5" />
+    <circle 
+      cx="50" 
+      cy="50" 
+      r="48" 
+      fill="none" 
+      stroke="currentColor"
+      strokeWidth="1.5"
+      style={{ color: 'inherit' }}
+    />
     
     {/* 24 spokes for Ashoka Chakra */}
     {Array.from({ length: 24 }).map((_, i) => {
@@ -61,7 +70,13 @@ export const AshokaChakraWatermark = ({ opacity = 0.08 }) => (
     })}
     
     {/* Inner circle */}
-    <circle cx="50" cy="50" r="5" fill="#0B1B3A" />
+    <circle 
+      cx="50" 
+      cy="50" 
+      r="5" 
+      fill="currentColor"
+      style={{ color: 'inherit' }}
+    />
   </svg>
 );
 

@@ -4,7 +4,9 @@ import { StorageCache } from '../storage';
 export class OpenAQClient {
   private apiKey: string = '';
   private readonly API_BASE_URL = 'https://api.openaq.org/v2';
-  private readonly DEMO_MODE = true; // Enable demo mode by default
+  private useDemoMode: boolean = false; // Default to real API (no key required)
+  private lastFetchTime: { [key: string]: number } = {};
+  private readonly RATE_LIMIT_MS = 5000; // 5 second rate limit per location
 
   constructor(apiKey?: string) {
     if (apiKey) {
@@ -14,6 +16,10 @@ export class OpenAQClient {
 
   setApiKey(apiKey: string): void {
     this.apiKey = apiKey;
+  }
+
+  setDemoMode(enabled: boolean): void {
+    this.useDemoMode = enabled;
   }
 
   /**
@@ -34,8 +40,8 @@ export class OpenAQClient {
     }
 
     try {
-      // Try real API if key available
-      if (this.apiKey && !this.DEMO_MODE) {
+      // Try real API first (OpenAQ v2 is free, no key required)
+      if (!this.useDemoMode) {
         const data = await this.fetchFromOpenAQ(latitude, longitude);
         if (data) {
           StorageCache.setAirQualityCache(placeId, data);
@@ -43,7 +49,7 @@ export class OpenAQClient {
         }
       }
 
-      // Fallback to demo data
+      // Fallback to demo data if real API fails or demo mode enabled
       const demoData = this.generateDemoData(placeId, latitude, longitude);
       StorageCache.setAirQualityCache(placeId, demoData);
       return demoData;
@@ -54,15 +60,16 @@ export class OpenAQClient {
   }
 
   /**
-   * Fetch data from real OpenAQ API
+   * Fetch data from real OpenAQ API via local proxy to avoid CORS
    */
   private async fetchFromOpenAQ(
     latitude: number,
     longitude: number
   ): Promise<AirQualityData | null> {
     try {
+      // Use local API route as proxy to avoid CORS issues
       const response = await fetch(
-        `${this.API_BASE_URL}/latest?coordinates=${latitude},${longitude}&radius=50000`,
+        `/api/air-quality?lat=${latitude}&lng=${longitude}`,
         {
           headers: {
             'Accept': 'application/json',
@@ -71,18 +78,23 @@ export class OpenAQClient {
       );
 
       if (!response.ok) {
-        throw new Error(`OpenAQ API error: ${response.status}`);
+        console.warn(`[v0] Air quality proxy error: ${response.status}`);
+        return null;
       }
 
       const data = await response.json();
 
-      if (!data.results || data.results.length === 0) {
+      if (!data.success) {
+        console.warn('[v0] Air quality data fetch failed:', data.error);
         return null;
       }
 
-      const result = data.results[0];
-      const pm25 = result.pm25 || 0;
-      const pm10 = result.pm10 || 0;
+      if (!data.data) {
+        return null;
+      }
+
+      const pm25 = data.data.pm25 || 0;
+      const pm10 = data.data.pm10 || 0;
 
       return {
         placeId: '',
@@ -95,7 +107,7 @@ export class OpenAQClient {
         hourlyTrend: this.generateHourlyTrend(pm25),
       };
     } catch (error) {
-      console.error('[v0] OpenAQ fetch error:', error);
+      console.warn('[v0] OpenAQ fetch error, using demo data:', error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
   }

@@ -216,7 +216,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 export const useProfile = () => {
   const context = useContext(ProfileContext);
   if (!context) {
-    throw new Error('useProfile must be used within ProfileProvider');
+    return {
+      user: null,
+      activeProfile: null,
+      profiles: [],
+      setActiveProfile: () => {},
+      updateProfile: () => {},
+      createProfile: () => {},
+      setEntitlementLevel: () => {},
+      addFamilyMember: () => {},
+      removeFamilyMember: () => {},
+    };
   }
   return context;
 };
