@@ -51,7 +51,11 @@ export function AdminPanel() {
     alert(`✓ Granted ${plan} plan for 30 days`);
   };
 
-  const isAdminMode = adminManager.getAdminMode();
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  useEffect(() => {
+    setIsAdminMode(adminManager.isAdminModeActive());
+  }, []);
 
   if (!isAdminMode) {
     return null;
