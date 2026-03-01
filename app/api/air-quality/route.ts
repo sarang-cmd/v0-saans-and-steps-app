@@ -11,19 +11,30 @@ export async function GET(request: Request) {
   }
 
   try {
+    const apiKey = process.env.OPENAQ_API_KEY;
+    
+    // Build headers with API key if available
+    const headers: HeadersInit = {
+      'Accept': 'application/json',
+      'User-Agent': 'Saans-Steps-App/1.0',
+    };
+
+    if (apiKey) {
+      headers['X-API-Key'] = apiKey;
+    }
+
     // OpenAQ v3 API - first find nearest location, then get latest measurements
     const locResponse = await fetch(
       `https://api.openaq.org/v3/locations?coordinates=${lat},${lng}&radius=50000&limit=1`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Saans-Steps-App/1.0',
-        },
-      }
+      { headers }
     );
 
     if (!locResponse.ok) {
-      console.error(`[v0] OpenAQ API returned ${locResponse.status}`);
+      console.error(`[v0] OpenAQ locations API returned ${locResponse.status}`, {
+        lat,
+        lng,
+        hasApiKey: !!apiKey,
+      });
       return Response.json(
         { success: false, error: `OpenAQ API error: ${locResponse.status}` },
         { status: locResponse.status }
@@ -33,6 +44,7 @@ export async function GET(request: Request) {
     const locData = await locResponse.json();
 
     if (!locData.results || locData.results.length === 0) {
+      console.warn('[v0] No air quality stations found nearby', { lat, lng });
       return Response.json(
         { success: false, error: 'No air quality stations found nearby' },
         { status: 404 }
@@ -40,20 +52,19 @@ export async function GET(request: Request) {
     }
 
     const locationId = locData.results[0].id;
+    console.log('[v0] Found station:', { locationId, lat, lng });
 
     // Fetch latest measurements for the nearest station
     const measResponse = await fetch(
       `https://api.openaq.org/v3/locations/${locationId}/latest`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Saans-Steps-App/1.0',
-        },
-      }
+      { headers }
     );
 
     if (!measResponse.ok) {
-      console.error(`[v0] OpenAQ measurements API returned ${measResponse.status}`);
+      console.error(`[v0] OpenAQ measurements API returned ${measResponse.status}`, {
+        locationId,
+        hasApiKey: !!apiKey,
+      });
       return Response.json(
         { success: false, error: `OpenAQ measurements error: ${measResponse.status}` },
         { status: measResponse.status }
@@ -62,6 +73,15 @@ export async function GET(request: Request) {
 
     const measData = await measResponse.json();
     const results = measData.results || [];
+
+    console.log('[v0] Received measurements:', {
+      locationId,
+      resultCount: results.length,
+      measurements: results.map((r: any) => ({
+        parameter: r.parameter?.name ?? r.parameter,
+        value: r.value,
+      })),
+    });
 
     let pm25 = 0;
     let pm10 = 0;
@@ -79,6 +99,7 @@ export async function GET(request: Request) {
         pm10,
         timestamp: new Date().toISOString(),
         source: 'openaq',
+        locationId,
       },
     });
   } catch (error) {
