@@ -75,9 +75,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header with Tricolor Wave */}
-      <header className="relative overflow-hidden border-b border-border">
-        <AshokaChakraWatermark opacity={0.05} />
+      <header className="relative border-b border-border">
         <TricolorWaveHeader />
+        <AshokaChakraWatermark opacity={0.07} />
         <div className="px-4 md:px-6 py-6 relative z-10">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-4">
@@ -153,54 +153,64 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Air Quality Hourly Trend */}
+          {/* Air Quality 24-Hour Trend */}
           {aqData?.hourlyTrend && (
             <div className="bg-card rounded-2xl p-6 border border-border mb-8">
               <h3 className="font-semibold text-foreground mb-4">24-Hour Air Quality Trend</h3>
 
-              <div className="overflow-x-auto pb-4">
-                <div className="flex gap-3 min-w-min">
+              <div className="relative h-40">
+                <div className="absolute inset-0 flex items-end gap-1">
                   {aqData.hourlyTrend.map((point, idx) => {
+                    const allAqi = aqData.hourlyTrend!.map((p) => p.aqi);
+                    const minAqi = Math.min(...allAqi);
+                    const maxAqi = Math.max(...allAqi);
+                    const range = maxAqi - minAqi || 1;
+                    const heightPct = Math.max(15, Math.round(((point.aqi - minAqi) / range) * 75 + 15));
                     const isOptimal = point.isOptimal;
-                    const hour = point.hour;
+                    const barColor = point.category === 'good'
+                      ? 'bg-green-500'
+                      : point.category === 'satisfactory'
+                        ? 'bg-emerald-400'
+                        : point.category === 'moderately-polluted'
+                          ? 'bg-yellow-400'
+                          : point.category === 'poor'
+                            ? 'bg-orange-400'
+                            : 'bg-red-500';
 
                     return (
-                      <div
-                        key={idx}
-                        className={`flex flex-col items-center gap-2 px-2 py-3 rounded-lg min-w-16 text-center transition-all ${
-                          isOptimal
-                            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                            : 'bg-foreground/5'
-                        }`}
-                      >
-                        <p className="text-xs font-semibold text-foreground">
-                          {hour.toString().padStart(2, '0')}:00
-                        </p>
-                        <p className={`text-sm font-bold ${
-                          point.category === 'good'
-                            ? 'text-green-600 dark:text-green-400'
-                            : point.category === 'satisfactory'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : point.category === 'moderately-polluted'
-                                ? 'text-yellow-600 dark:text-yellow-400'
-                                : 'text-orange-600 dark:text-orange-400'
-                        }`}>
-                          {point.aqi}
-                        </p>
-                        <p className="text-xs text-foreground/60">{point.pm25.toFixed(0)}</p>
+                      <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group relative">
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
+                          <div className="bg-foreground text-background text-xs rounded px-2 py-1 whitespace-nowrap">
+                            {point.hour}:00 — AQI {point.aqi}
+                          </div>
+                          <div className="w-2 h-2 bg-foreground rotate-45 -mt-1" />
+                        </div>
+
                         {isOptimal && (
-                          <span className="text-xs font-semibold text-green-600 dark:text-green-400">
-                            ✓ Best
-                          </span>
+                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-green-500" />
                         )}
+
+                        <div
+                          className={`w-full rounded-t-sm transition-all ${barColor} ${isOptimal ? 'ring-1 ring-green-400' : ''}`}
+                          style={{ height: `${heightPct}%` }}
+                        />
+
+                        <p className="text-xs text-foreground/50 leading-none whitespace-nowrap">
+                          {point.hour % 4 === 0 ? `${point.hour}h` : ''}
+                        </p>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-                <p>Green highlighted hours are optimal for outdoor workouts</p>
+              <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-green-500" /> Good</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-emerald-400" /> Satisfactory</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-yellow-400" /> Moderate</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-orange-400" /> Poor</span>
+                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> Optimal workout hour</span>
               </div>
             </div>
           )}

@@ -6,37 +6,51 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const navItems = [
     {
-      name: 'Today',
+      name: t('nav.today', 'Today'),
       href: '/',
-      icon: '📊',
-      description: 'Real-time AQI & workout windows',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 3h18v18H3z" /><path d="M3 9h18M9 21V9" />
+        </svg>
+      ),
       active: pathname === '/',
     },
     {
-      name: 'Planner',
+      name: t('nav.planner', 'Planner'),
       href: '/planner',
-      icon: '📅',
-      description: '7-day forecast',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+        </svg>
+      ),
       active: pathname === '/planner',
     },
     {
-      name: 'Watch',
+      name: t('nav.watch', 'Watch'),
       href: '/watch',
-      icon: '👁️',
-      description: 'Multi-city monitoring',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
+        </svg>
+      ),
       active: pathname === '/watch',
     },
     {
-      name: 'Profile',
+      name: t('nav.profile', 'Profile'),
       href: '/profile',
-      icon: '⚙️',
-      description: 'Settings & preferences',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+      ),
       active: pathname === '/profile',
     },
   ];
@@ -55,7 +69,7 @@ export const BottomNavigation: React.FC = () => {
                 : 'text-foreground/70 hover:text-foreground'
             )}
           >
-            <span className="text-xl">{item.icon}</span>
+            {item.icon}
             <span className="text-xs font-medium">{item.name}</span>
           </Link>
         ))}
@@ -66,20 +80,57 @@ export const BottomNavigation: React.FC = () => {
 
 export const TopNavigation: React.FC = () => {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const navItems = [
-    { name: 'Today', href: '/', icon: '📊' },
-    { name: 'Planner', href: '/planner', icon: '📅' },
-    { name: 'Watch', href: '/watch', icon: '👁️' },
-    { name: 'Profile', href: '/profile', icon: '⚙️' },
+    {
+      name: t('nav.today', 'Today'),
+      href: '/',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 3h18v18H3z" /><path d="M3 9h18M9 21V9" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav.planner', 'Planner'),
+      href: '/planner',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav.watch', 'Watch'),
+      href: '/watch',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
+        </svg>
+      ),
+    },
+    {
+      name: t('nav.profile', 'Profile'),
+      href: '/profile',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+      ),
+    },
   ];
 
   return (
     <nav className="hidden md:block fixed top-0 left-0 right-0 bg-card border-b border-border z-40">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-foreground">
-          <span className="text-2xl">🌬️</span>
-          Saans & Steps
+          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2a10 10 0 0 1 10 10" /><path d="M2 12a10 10 0 0 0 10 10" />
+            <path d="M9 3.5C5 5 2.5 9 2.5 12" /><path d="M15 20.5C19 19 21.5 15 21.5 12" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
+          Saans &amp; Steps
         </Link>
 
         <div className="flex items-center justify-between flex-1 ml-12">
@@ -96,14 +147,14 @@ export const TopNavigation: React.FC = () => {
                     : 'text-foreground/70 hover:text-foreground hover:bg-foreground/5'
                 )}
               >
-                <span>{item.icon}</span>
+                {item.icon}
                 <span>{item.name}</span>
               </Link>
             ))}
           </div>
 
-          {/* Right-side Controls - Spaced Out */}
-          <div className="flex items-center gap-3 border-l border-border/30 pl-8">
+          {/* Right-side Controls */}
+          <div className="flex items-center gap-3 border-l border-border/30 pl-6">
             <ThemeSwitcher />
             <LanguageSwitcher />
           </div>

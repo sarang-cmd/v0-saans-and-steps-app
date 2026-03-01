@@ -44,7 +44,7 @@ export function CursorThemeSwitcher() {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 md:bottom-auto md:top-24 md:right-4 z-40">
+    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-40">
       {showSelector && (
         <div className="absolute bottom-12 md:bottom-auto md:top-12 right-0 flex flex-col gap-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl p-3 shadow-xl">
           {CURSOR_THEMES.map((theme) => (

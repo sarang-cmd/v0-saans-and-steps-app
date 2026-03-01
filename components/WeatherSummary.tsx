@@ -99,47 +99,51 @@ export const HourlyWeatherChart: React.FC<HourlyWeatherChartProps> = ({
     <div className="bg-card rounded-2xl p-6 border border-border">
       <h3 className="font-semibold text-foreground mb-4">12-Hour Temperature Trend</h3>
 
-      <div className="flex items-end gap-2 h-32">
-        {forecast.map((point, idx) => {
-          const height = ((point.temperature - minTemp) / tempRange) * 100 + 20;
-          const isNow = point.hour === currentHour;
+      <div className="relative h-40">
+        <div className="absolute inset-0 flex items-end gap-1.5">
+          {forecast.map((point, idx) => {
+            const heightPct = Math.max(
+              20,
+              Math.round(((point.temperature - minTemp) / tempRange) * 75 + 20)
+            );
+            const isNow = point.hour === currentHour;
 
-          return (
-            <div
-              key={idx}
-              className="flex-1 flex flex-col items-center gap-2 min-w-0"
-            >
-              <div className="flex flex-col items-center">
-                <p className={cn(
-                  'text-xs font-semibold',
-                  isNow ? 'text-primary font-bold' : 'text-foreground/70'
-                )}>
-                  {point.temperature.toFixed(0)}°
+            return (
+              <div
+                key={idx}
+                className="flex-1 flex flex-col items-center justify-end gap-1 h-full"
+              >
+                <p
+                  className={cn(
+                    'text-xs font-semibold leading-none',
+                    isNow ? 'text-primary font-bold' : 'text-foreground/70'
+                  )}
+                >
+                  {point.temperature.toFixed(0)}&deg;
+                </p>
+
+                <div
+                  className={cn(
+                    'w-full rounded-t-md transition-all',
+                    isNow ? 'bg-primary shadow-lg' : 'bg-accent/70 hover:bg-accent'
+                  )}
+                  style={{ height: `${heightPct}%` }}
+                />
+
+                <p className="text-xs text-foreground/60 text-center leading-none whitespace-nowrap">
+                  {point.hour % 2 === 0 ? `${point.hour}h` : ''}
                 </p>
               </div>
-
-              <div
-                className={cn(
-                  'w-full rounded-t-lg transition-all',
-                  isNow
-                    ? 'bg-primary shadow-lg'
-                    : 'bg-accent hover:bg-accent/80'
-                )}
-                style={{ height: `${height}%` }}
-              />
-
-              <p className="text-xs text-foreground/60 text-center min-w-max">
-                {point.hour % 2 === 0 ? `${point.hour}:00` : ''}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-        <p>Current hour marked in {' '}
-          <span className="inline-block w-3 h-3 bg-primary rounded-sm align-text-bottom" />
-        </p>
+      <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="inline-block w-3 h-3 bg-primary rounded-sm" />
+        <span>Current hour</span>
+        <span className="inline-block w-3 h-3 bg-accent/70 rounded-sm ml-3" />
+        <span>Forecast</span>
       </div>
     </div>
   );
