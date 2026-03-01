@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ScoreWindow } from '@/lib/types';
-import { ActivityIcon } from './SvgIllustrations';
+import { ActivityIcon, ActivityConditionTags } from './SvgIllustrations';
 import { cn } from '@/lib/utils';
 
 interface OptimalWindowsCardProps {
@@ -80,16 +80,31 @@ export const OptimalWindowsCard: React.FC<OptimalWindowsCardProps> = ({ windows,
             <p className="text-sm text-foreground/80 mb-3">{window.recommendation}</p>
 
             {window.suitableActivities && window.suitableActivities.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {window.suitableActivities.slice(0, 3).map((activity) => (
-                  <div
-                    key={activity}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-foreground/5 rounded text-xs font-medium text-foreground/70"
-                  >
-                    <ActivityIcon type={activity as any} className="w-3 h-3" />
-                    {activity.replace('-', ' ')}
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  {window.suitableActivities.slice(0, 3).map((activity) => (
+                    <div
+                      key={activity}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-foreground/5 border border-border/40 rounded-full text-xs font-medium text-foreground/80"
+                    >
+                      <ActivityIcon type={activity as any} className="w-3.5 h-3.5 shrink-0" />
+                      <span className="capitalize">{activity.replace('-', ' ')}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Condition tags for first activity */}
+                {ActivityConditionTags[window.suitableActivities[0]] && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {ActivityConditionTags[window.suitableActivities[0]].map((tag) => (
+                      <span
+                        key={tag.label}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${tag.color}`}
+                      >
+                        {tag.label}
+                      </span>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

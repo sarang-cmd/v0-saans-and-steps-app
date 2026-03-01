@@ -29,27 +29,20 @@ export const TricolorWaveHeader = () => (
 export const AshokaChakraWatermark = ({ opacity = 0.08 }) => (
   <svg
     viewBox="0 0 100 100"
-    className="absolute top-0 right-0 w-64 h-64 pointer-events-none overflow-hidden"
+    className="absolute top-0 right-16 w-48 h-48 pointer-events-none text-foreground dark:text-white"
     style={{ opacity, zIndex: 0 }}
+    aria-hidden="true"
   >
-    <defs>
-      <style>{`
-        .chakra-spoke { stroke: currentColor; }
-        .dark .chakra-spoke { stroke: #FFFFFF; }
-      `}</style>
-    </defs>
-    
     {/* Outer circle */}
-    <circle 
-      cx="50" 
-      cy="50" 
-      r="48" 
-      fill="none" 
+    <circle
+      cx="50"
+      cy="50"
+      r="48"
+      fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      style={{ color: 'inherit' }}
     />
-    
+
     {/* 24 spokes for Ashoka Chakra */}
     {Array.from({ length: 24 }).map((_, i) => {
       const angle = (i * 360) / 24;
@@ -63,20 +56,14 @@ export const AshokaChakraWatermark = ({ opacity = 0.08 }) => (
           y1="50"
           x2={x2}
           y2={y2}
-          className="chakra-spoke"
+          stroke="currentColor"
           strokeWidth="1"
         />
       );
     })}
-    
+
     {/* Inner circle */}
-    <circle 
-      cx="50" 
-      cy="50" 
-      r="5" 
-      fill="currentColor"
-      style={{ color: 'inherit' }}
-    />
+    <circle cx="50" cy="50" r="5" fill="currentColor" />
   </svg>
 );
 
@@ -128,43 +115,73 @@ export const ActivityIcon = ({
   type: 'running' | 'walking' | 'cycling' | 'yoga' | 'outdoor';
   className?: string;
 }) => {
-  const icons = {
+  const icons: Record<string, React.ReactNode> = {
     running: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="8" cy="5" r="1.5" />
-        <path d="M5 22v-7l2-8m6 20v-4l3-10M4 15l6-2m7 2l-5 6" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="13" cy="4" r="1.5" />
+        <path d="M7.5 20l2-9 3 3 2-4 2 10" />
+        <path d="M11 11l-1-4 4 1.5" />
       </svg>
     ),
     walking: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="8" cy="5" r="1.5" />
-        <path d="M2 22h20M5 9v8m7 5v-8m4-5v12" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="4" r="1.5" />
+        <path d="M9 20l1-5 2 2 1-5" />
+        <path d="M7 9l5 1 2 4" />
       </svg>
     ),
     cycling: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="5" cy="18" r="3" />
-        <circle cx="19" cy="18" r="3" />
-        <path d="M12 18V9m-4-4h8l-2 5h4l-1-5" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="6" cy="16" r="3" />
+        <circle cx="18" cy="16" r="3" />
+        <path d="M6 16l4-6h4l2 6" />
+        <path d="M12 10V6" />
+        <circle cx="12" cy="5" r="1.5" />
       </svg>
     ),
     yoga: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="5" r="2" />
-        <path d="M12 9v4m-3 0l4-6 4 6m-7 4l3 6-6 2" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="4" r="1.5" />
+        <path d="M12 6v4" />
+        <path d="M8 14l4-4 4 4" />
+        <path d="M6 18l2-4h8l2 4" />
       </svg>
     ),
     outdoor: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2l4 4h-3v5h-2V6H8l4-4z" />
-        <circle cx="6" cy="14" r="2" />
-        <circle cx="18" cy="14" r="2" />
-        <path d="M6 16v4h12v-4" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 18l9-12 9 12H3z" />
+        <path d="M3 18h18" />
       </svg>
     ),
   };
 
   return <div className={className}>{icons[type]}</div>;
+};
+
+export const ActivityConditionTags: Record<string, { label: string; color: string }[]> = {
+  running: [
+    { label: 'Low AQI', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+    { label: 'Cool temp', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+    { label: 'Low wind', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
+  ],
+  walking: [
+    { label: 'Any weather', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+    { label: 'Moderate AQI', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
+  ],
+  cycling: [
+    { label: 'Low AQI', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+    { label: 'Low humidity', color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300' },
+    { label: 'No rain', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
+  ],
+  yoga: [
+    { label: 'Indoor ok', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
+    { label: 'Calm wind', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
+  ],
+  outdoor: [
+    { label: 'Good air', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+    { label: 'Sunny', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' },
+    { label: 'Clear skies', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
+  ],
 };
 
 export const AQIIndicator = ({ category }: { category: string }) => {

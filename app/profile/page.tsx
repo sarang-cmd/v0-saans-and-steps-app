@@ -8,6 +8,7 @@ import { ENTITLEMENTS } from '@/lib/types';
 import { FamilyFeatures } from '@/components/FamilyFeatures';
 import { PaymentModal } from '@/components/PaymentModal';
 import { AdminPanel } from '@/components/AdminPanel';
+import { adminManager } from '@/lib/admin';
 
 export default function ProfilePage() {
   const { activeProfile, profiles, user, setActiveProfile, updateProfile, createProfile, setEntitlementLevel, addFamilyMember, removeFamilyMember } = useProfile();
@@ -16,6 +17,11 @@ export default function ProfilePage() {
   const [sensitivity, setSensitivity] = useState(activeProfile?.sensitivity || 'medium');
   const [accessibilityMode, setAccessibilityMode] = useState(activeProfile?.accessibilityMode || 'normal');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isAdminMode, setIsAdminMode] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsAdminMode(adminManager.isAdminModeActive());
+  }, []);
 
   const handleSaveProfile = () => {
     if (activeProfile) {
@@ -203,15 +209,73 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Cloud Integration</CardTitle>
-              <CardDescription>Optional Firebase setup for cloud sync</CardDescription>
+              <CardDescription>Sign in and configure Firebase for cloud sync</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button variant="outline" asChild>
-                <a href="/firebase-setup">Configure Firebase</a>
-              </Button>
-              <p className="text-sm text-foreground/60 mt-4">
-                Firebase is completely optional. Your data is saved locally by default.
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" asChild>
+                  <a href="/auth">Sign In / Create Account</a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href="/firebase-setup">Configure Firebase</a>
+                </Button>
+              </div>
+              <p className="text-sm text-foreground/60">
+                Firebase is optional. Your data is saved locally by default. Sign in to sync across devices.
               </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Admin Panel Access */}
+        <div className="mt-8">
+          <Card className={isAdminMode ? 'border-violet-400 bg-violet-50/30 dark:bg-violet-900/10' : ''}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-violet-600 dark:text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Admin Panel
+              </CardTitle>
+              <CardDescription>
+                {isAdminMode ? 'Admin mode is active. Panel is accessible.' : 'Tap the logo 7 times or use an admin account to unlock.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {isAdminMode ? (
+                <>
+                  <p className="text-sm text-foreground/70">
+                    Admin mode is active. Press <kbd className="px-1.5 py-0.5 bg-muted border border-border rounded text-xs font-mono">Ctrl+Shift+A</kbd> anywhere to toggle the panel.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      // Dispatch keyboard shortcut event to open admin panel
+                      window.dispatchEvent(new KeyboardEvent('keydown', { ctrlKey: true, shiftKey: true, key: 'A', bubbles: true }));
+                    }}
+                    variant="outline"
+                    className="border-violet-300 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:border-violet-700 dark:hover:bg-violet-900/20"
+                  >
+                    Open Admin Panel
+                  </Button>
+                </>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="outline" asChild size="sm">
+                    <a href="/auth">Sign In as Admin</a>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      // Register 7 taps quickly
+                      for (let i = 0; i < 7; i++) adminManager.registerLogoTap();
+                      setIsAdminMode(adminManager.isAdminModeActive());
+                    }}
+                  >
+                    Unlock (Debug)
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

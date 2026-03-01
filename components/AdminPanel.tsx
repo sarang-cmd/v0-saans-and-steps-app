@@ -9,7 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export function AdminPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'grants' | 'payments' | 'settings'>('overview');
-  const [flags, setFlags] = useState(adminManager.getAllFlags());
+  const [flags, setFlags] = useState<ReturnType<typeof adminManager.getAllFlags>>([]);
   const [glassmorphismEnabled, setGlassmorphismEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('glassmorphism_enabled') === 'true';
@@ -54,6 +54,8 @@ export function AdminPanel() {
   const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
+    // Load on client only to avoid SSR issues
+    setFlags(adminManager.getAllFlags());
     setIsAdminMode(adminManager.isAdminModeActive());
   }, []);
 
