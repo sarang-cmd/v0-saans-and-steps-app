@@ -23,20 +23,36 @@ export async function GET(request: Request) {
       headers['X-API-Key'] = apiKey;
     }
 
+    // Truncate coordinates to 4 decimal places as per OpenAQ v3 API spec
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    const latTrunc = Math.round(latNum * 10000) / 10000;
+    const lngTrunc = Math.round(lngNum * 10000) / 10000;
+    
+    console.log('[v0] Fetching air quality for:', {
+      original: { lat, lng },
+      truncated: { lat: latTrunc, lng: lngTrunc },
+      hasApiKey: !!apiKey,
+    });
+
     // OpenAQ v3 API - first find nearest location, then get latest measurements
+    // Coordinates parameter format: "latitude,longitude" (both truncated to 4 decimals)
     const locResponse = await fetch(
-      `https://api.openaq.org/v3/locations?coordinates=${lat},${lng}&radius=50000&limit=1`,
+      `https://api.openaq.org/v3/locations?coordinates=${latTrunc},${lngTrunc}&radius=50000&limit=1`,
       { headers }
     );
 
     if (!locResponse.ok) {
-      console.error(`[v0] OpenAQ locations API returned ${locResponse.status}`, {
-        lat,
-        lng,
+      const errorText = await locResponse.text().catch(() => '');
+      console.error('[v0] OpenAQ locations API error:', {
+        status: locResponse.status,
+        statusText: locResponse.statusText,
+        coordinates: `${latTrunc},${lngTrunc}`,
         hasApiKey: !!apiKey,
+        errorResponse: errorText.slice(0, 500),
       });
       return Response.json(
-        { success: false, error: `OpenAQ API error: ${locResponse.status}` },
+        { success: false, error: `OpenAQ API error: ${locResponse.status} ${locResponse.statusText}` },
         { status: locResponse.status }
       );
     }
@@ -44,7 +60,9 @@ export async function GET(request: Request) {
     const locData = await locResponse.json();
 
     if (!locData.results || locData.results.length === 0) {
-      console.warn('[v0] No air quality stations found nearby', { lat, lng });
+      console.warn('[v0] No air quality stations found nearby', {
+        coordinates: `${latTrunc},${lngTrunc}`,
+      });
       return Response.json(
         { success: false, error: 'No air quality stations found nearby' },
         { status: 404 }
@@ -52,7 +70,12 @@ export async function GET(request: Request) {
     }
 
     const locationId = locData.results[0].id;
-    console.log('[v0] Found station:', { locationId, lat, lng });
+    const stationName = locData.results[0].name || 'Unknown';
+    console.log('[v0] Found nearest station:', {
+      id: locationId,
+      name: stationName,
+      coordinates: `${latTrunc},${lngTrunc}`,
+    });
 
     // Fetch latest measurements for the nearest station
     const measResponse = await fetch(
@@ -61,9 +84,13 @@ export async function GET(request: Request) {
     );
 
     if (!measResponse.ok) {
-      console.error(`[v0] OpenAQ measurements API returned ${measResponse.status}`, {
+      const errorText = await measResponse.text().catch(() => '');
+      console.error('[v0] OpenAQ measurements API error:', {
+        status: measResponse.status,
+        statusText: measResponse.statusText,
         locationId,
         hasApiKey: !!apiKey,
+        errorResponse: errorText.slice(0, 500),
       });
       return Response.json(
         { success: false, error: `OpenAQ measurements error: ${measResponse.status}` },
@@ -72,14 +99,17 @@ export async function GET(request: Request) {
     }
 
     const measData = await measResponse.json();
-    const results = measData.results || [];
+    const results = Array.isArray(measData.results) ? measData.results : [];
 
     console.log('[v0] Received measurements:', {
       locationId,
+      stationName,
       resultCount: results.length,
-      measurements: results.map((r: any) => ({
+      measurements: results.slice(0, 5).map((r: any) => ({
         parameter: r.parameter?.name ?? r.parameter,
         value: r.value,
+        unit: r.unit,
+        lastUpdated: r.lastUpdated,
       })),
     });
 
@@ -87,10 +117,12 @@ export async function GET(request: Request) {
     let pm10 = 0;
 
     for (const m of results) {
-      const paramName = m.parameter?.name ?? m.parameter;
-      if (paramName === 'pm25' || paramName === 'pm2.5') pm25 = m.value ?? 0;
+      const paramName = (m.parameter?.name ?? m.parameter ?? '').toLowerCase();
+      if (paramName.includes('pm2.5') || paramName === 'pm25') pm25 = m.value ?? 0;
       if (paramName === 'pm10') pm10 = m.value ?? 0;
     }
+
+    console.log('[v0] Extracted air quality values:', { pm25, pm10 });
 
     return Response.json({
       success: true,
@@ -100,6 +132,7 @@ export async function GET(request: Request) {
         timestamp: new Date().toISOString(),
         source: 'openaq',
         locationId,
+        stationName,
       },
     });
   } catch (error) {
