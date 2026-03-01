@@ -101,11 +101,13 @@ export default function ProfilePage() {
                 <button
                   key={profile.id}
                   onClick={() => setActiveProfile(profile.id)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  className={`p-4 rounded-lg border-2 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     activeProfile?.id === profile.id
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50'
                   }`}
+                  aria-pressed={activeProfile?.id === profile.id}
+                  aria-label={`Select profile: ${profile.name}, Sensitivity: ${profile.sensitivity}`}
                 >
                   <h3 className="font-semibold text-foreground">{profile.name}</h3>
                   <p className="text-sm text-foreground/60 mt-1">Sensitivity: {profile.sensitivity}</p>
