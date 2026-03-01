@@ -37,19 +37,30 @@ export async function GET(request: Request) {
 
     // OpenAQ v3 API - first find nearest location, then get latest measurements
     // Coordinates parameter format: "latitude,longitude" (both truncated to 4 decimals)
-    const locResponse = await fetch(
-      `https://api.openaq.org/v3/locations?coordinates=${latTrunc},${lngTrunc}&radius=50000&limit=1`,
-      { headers }
-    );
+    const coordinatesParam = `${latTrunc},${lngTrunc}`;
+    const url = new URL('https://api.openaq.org/v3/locations');
+    url.searchParams.set('coordinates', coordinatesParam);
+    url.searchParams.set('radius', '50000');
+    url.searchParams.set('limit', '1');
+
+    console.log('[v0] OpenAQ request URL:', {
+      fullUrl: url.toString(),
+      coordinates: coordinatesParam,
+      hasApiKey: !!apiKey,
+    });
+
+    const locResponse = await fetch(url.toString(), { headers });
 
     if (!locResponse.ok) {
       const errorText = await locResponse.text().catch(() => '');
+      const errorJson = errorText.startsWith('{') ? JSON.parse(errorText).catch(() => ({})) : {};
       console.error('[v0] OpenAQ locations API error:', {
         status: locResponse.status,
         statusText: locResponse.statusText,
         coordinates: `${latTrunc},${lngTrunc}`,
         hasApiKey: !!apiKey,
-        errorResponse: errorText.slice(0, 500),
+        errorResponse: errorText.slice(0, 200),
+        parsedError: errorJson,
       });
       return Response.json(
         { success: false, error: `OpenAQ API error: ${locResponse.status} ${locResponse.statusText}` },
