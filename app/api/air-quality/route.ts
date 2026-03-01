@@ -11,9 +11,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Proxy request to OpenAQ API
+    // Proxy request to OpenAQ API (correct hostname: api.openaq.org)
     const response = await fetch(
-      `https://api.openaqdata.org/v2/latest?coordinates=${lat},${lng}&radius=50000`,
+      `https://api.openaq.org/v2/latest?coordinates=${lat},${lng}&radius=50000&limit=1`,
       {
         headers: {
           'Accept': 'application/json',
@@ -39,9 +39,17 @@ export async function GET(request: Request) {
       );
     }
 
+    // OpenAQ v2 returns measurements in a nested structure
     const result = data.results[0];
-    const pm25 = result.pm25 || 0;
-    const pm10 = result.pm10 || 0;
+    const measurements = result.measurements || [];
+
+    let pm25 = 0;
+    let pm10 = 0;
+
+    for (const m of measurements) {
+      if (m.parameter === 'pm25') pm25 = m.value || 0;
+      if (m.parameter === 'pm10') pm10 = m.value || 0;
+    }
 
     return Response.json({
       success: true,
