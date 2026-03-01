@@ -26,33 +26,6 @@ export const TricolorWaveHeader = () => (
   </svg>
 );
 
-export const DelhiSkylineLineArt = () => (
-  <svg viewBox="0 0 800 200" className="w-full h-auto" aria-hidden="true">
-    <defs>
-      <linearGradient id="skyline-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="#B0E8D4" stopOpacity="0.3" />
-        <stop offset="100%" stopColor="#0B7DBA" stopOpacity="0.1" />
-      </linearGradient>
-    </defs>
-    
-    {/* Skyline silhouette */}
-    <path
-      d="M 0,150 L 50,120 L 50,150 L 100,90 L 100,150 L 150,110 L 150,150 L 200,80 L 200,150 L 250,100 L 250,150 L 300,70 L 300,150 L 350,95 L 350,150 L 400,75 L 400,150 L 450,105 L 450,150 L 500,85 L 500,150 L 550,115 L 550,150 L 600,90 L 600,150 L 650,110 L 650,150 L 700,85 L 700,150 L 750,100 L 750,150 L 800,80 L 800,150 L 800,200 L 0,200 Z"
-      fill="url(#skyline-gradient)"
-      stroke="#138808"
-      strokeWidth="2"
-    />
-    
-    {/* Subtle window details */}
-    {Array.from({ length: 8 }).map((_, i) => (
-      <g key={i}>
-        <rect x={i * 100 + 10} y="95" width="8" height="8" fill="#0B7DBA" opacity="0.3" />
-        <rect x={i * 100 + 25} y="95" width="8" height="8" fill="#0B7DBA" opacity="0.3" />
-      </g>
-    ))}
-  </svg>
-);
-
 export const AshokaChakraWatermark = ({ opacity = 0.08 }) => (
   <svg
     viewBox="0 0 100 100"
