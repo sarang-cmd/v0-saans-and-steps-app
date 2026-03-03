@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { DataProvider } from '@/contexts/DataContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -83,7 +83,7 @@ export default function RootLayout({
             </ProfileProvider>
           </ThemeProvider>
         </LanguageProvider>
-        <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   )
