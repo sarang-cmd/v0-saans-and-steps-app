@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { DataProvider } from '@/contexts/DataContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -8,10 +7,10 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 import { TopNavigation, BottomNavigation } from '@/components/Navigation'
 import { OfflineNotification, ServiceWorkerRegister } from '@/components/OfflineNotification'
 import { NotificationsCenter } from '@/components/NotificationsCenter'
-import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { CursorThemeSwitcher } from '@/components/CursorThemeSwitcher'
 import { FontInitializer } from '@/components/FontInitializer'
 import { ThemeShortcutHandler } from '@/components/ThemeShortcutHandler'
+import { AnalyticsWrapper } from '@/components/Analytics'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"], variable: '--font-geist-sans' });
@@ -83,7 +82,7 @@ export default function RootLayout({
             </ProfileProvider>
           </ThemeProvider>
         </LanguageProvider>
-        <VercelAnalytics />
+        <AnalyticsWrapper />
       </body>
     </html>
   )
