@@ -1,5 +1,5 @@
 export const TricolorWaveHeader = () => (
-  <svg viewBox="0 0 1200 120" className="w-full h-auto">
+  <svg viewBox="0 0 1200 120" className="w-full h-auto" aria-hidden="true">
     <defs>
       <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="0%" stopColor="#FF9933" />

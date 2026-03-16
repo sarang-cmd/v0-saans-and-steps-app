@@ -53,8 +53,10 @@ export interface AirQualityData {
   pm10: number;
   aqi: number;
   aqiCategory: AQICategory;
-  dataSource: 'openaq' | 'demo';
+  dataSource: 'openaq_real' | 'openaq' | 'demo';
   hourlyTrend?: HourlyAQIPoint[];
+  stationName?: string;
+  locationId?: string;
 }
 
 export type AQICategory = 'good' | 'satisfactory' | 'moderately-polluted' | 'poor' | 'very-poor' | 'severe';
